@@ -1,15 +1,18 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../store';
+import { logoutAction } from '../store/user-slice';
 import { Logo } from './logo';
 
-type HeaderProps = {
-  isAuth: boolean;
-  onLogout: () => void;
-};
-
-export function Header({ isAuth, onLogout }: HeaderProps) {
+export function Header() {
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const isAuth = useAppSelector((state) => state.user.isAuth);
 
   const isActive = (path: string) => location.pathname === path ? ' active' : '';
+
+  const handleLogout = () => {
+    dispatch(logoutAction());
+  };
 
   return (
     <header className="header">
@@ -37,7 +40,7 @@ export function Header({ isAuth, onLogout }: HeaderProps) {
           {isAuth ? (
             <button
               className="btn btn--accent header__side-item"
-              onClick={onLogout}
+              onClick={handleLogout}
               type="button"
             >
               Выйти
@@ -55,3 +58,4 @@ export function Header({ isAuth, onLogout }: HeaderProps) {
     </header>
   );
 }
+
