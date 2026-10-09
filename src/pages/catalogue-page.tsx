@@ -1,29 +1,61 @@
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { Header } from '../components/header';
 import { Footer } from '../components/footer';
 import { QuestCard } from '../components/quest-card';
 import { Filter } from '../components/filter';
-import { mockQuests } from '../mocks/quests';
+import { useAppDispatch, useAppSelector } from '../store';
+import { fetchQuestsAction } from '../store/quests-slice';
 import { QuestType, QuestLevel } from '../types/quest';
 
 export default function CataloguePage() {
-  const isAuth = false;
-  const handleLogout = () => {
-    // доделать логику Logout позже
-  };
+  const dispatch = useAppDispatch();
+  const { quests, isLoading, error } = useAppSelector((state) => state.quests);
 
   const [selectedType, setSelectedType] = useState<QuestType | 'all'>('all');
   const [selectedLevel, setSelectedLevel] = useState<QuestLevel | 'any'>('any');
 
-  const filteredQuests = mockQuests.filter((quest) => {
+  useEffect(() => {
+    dispatch(fetchQuestsAction());
+  }, [dispatch]);
+
+  const filteredQuests = quests.filter((quest) => {
     const matchesType = selectedType === 'all' || quest.type === selectedType;
     const matchesLevel = selectedLevel === 'any' || quest.level === selectedLevel;
     return matchesType && matchesLevel;
   });
 
+  if (isLoading) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p>Загрузка квестов...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p className="form-error" style={{ color: 'red' }}>Ошибка: {error}</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="page">
-      <Header isAuth={isAuth} onLogout={handleLogout} />
+      <Header />
       <main className="page-content">
         <div className="container">
           <div className="page-content__title-wrapper">
@@ -42,11 +74,16 @@ export default function CataloguePage() {
               onLevelChange={setSelectedLevel}
             />
             <h2 className="title visually-hidden">Выберите квест</h2>
-            <div className="cards-grid">
-              {filteredQuests.map((quest) => (
-                <QuestCard key={quest.id} quest={quest} />
-              ))}
-            </div>
+
+            {filteredQuests.length === 0 ? (
+              <p>По выбранным фильтрам квесты не найдены.</p>
+            ) : (
+              <div className="cards-grid">
+                {filteredQuests.map((quest) => (
+                  <QuestCard key={quest.id} quest={quest} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -54,4 +91,3 @@ export default function CataloguePage() {
     </div>
   );
 }
-
