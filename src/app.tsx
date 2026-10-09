@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './store';
+import { AppRoute } from './api';
 import CataloguePage from './pages/catalogue-page';
 import QuestPage from './pages/quest-page';
 import ContactsPage from './pages/contacts-page';
@@ -8,16 +9,6 @@ import BookingPage from './pages/booking-page';
 import MyBookingsPage from './pages/mybookings-page';
 import NotFoundPage from './pages/not-found-page';
 import { PrivateRoute } from './components/private-route';
-
-export const AppRoute = {
-  Root: '/',
-  Contacts: '/contacts',
-  Auth: '/auth',
-  Quest: '/quest/:id',
-  Booking: '/quest/:id/booking',
-  MyQuests: '/my-quests',
-  NotFound: '*',
-} as const;
 
 function App() {
   const isAuth = useAppSelector((state) => state.user.isAuth);

@@ -5,7 +5,7 @@ import { Footer } from '../components/footer';
 export default function NotFoundPage() {
   return (
     <div className="page">
-      <Header isAuth={false} onLogout={() => undefined} />
+      <Header />
 
       <main className="page-content">
         <section className="container container--size-l not-found">

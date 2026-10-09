@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { API_URL } from '../constants/api';
+import { fetchApi } from '../api';
 import { Quest } from '../types/quest';
 import { QuestPreviewDto, adaptQuestToClient } from '../adapters/quest-adapter';
 
@@ -19,18 +19,12 @@ export const fetchQuestsAction = createAsyncThunk<Quest[], void>(
   'quests/fetchQuests',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/quest`);
-      if (!response.ok) {
-        throw new Error('Не удалось загрузить квесты');
-      }
-
-      const data = (await response.json()) as QuestPreviewDto[];
-
+      const data = await fetchApi<QuestPreviewDto[]>('/quest');
       return data.map(adaptQuestToClient);
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
     }
-  }
+  },
 );
 
 const questsSlice = createSlice({

@@ -1,27 +1,26 @@
-export type QuestLevel = 'easy' | 'middle' | 'hard';
-export type QuestType =
-  | 'adventures'
-  | 'horror'
-  | 'mystic'
-  | 'detective'
-  | 'sci-fi';
+export type QuestLevel = 'easy' | 'medium' | 'hard';
+export type QuestType = 'adventures' | 'horror' | 'mystic' | 'detective' | 'sci-fi';
 
 export interface Quest {
   id: string;
   title: string;
-  previewImg: string;
-  previewImg2x: string;
-  previewImgWebp: string;
-  previewImgWebp2x: string;
-  coverImg?: string;
-  coverImgWebp?: string;
-  level: QuestLevel;
   type: QuestType;
+  typeLabel: string;
+  description: string;
+  previewImg: string;
+  previewImgWebp: string;
+  previewImg2x?: string;
+  previewImgWebp2x?: string;
+  previewImgAlt: string;
+  coverImg: string;
+  coverImgWebp: string;
+  coverImg2x?: string;
+  coverImgWebp2x?: string;
+  coverImgAlt: string;
+  level: QuestLevel;
+  levelLabel: string;
   peopleMinCount: number;
   peopleMaxCount: number;
-  typeLabel: string;
-  levelLabel: string;
-  previewImgAlt: string;
-  coverImgAlt: string;
-  description: string;
 }
+
+

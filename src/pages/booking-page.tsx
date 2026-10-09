@@ -132,12 +132,7 @@ export default function BookingPage() {
 
   return (
     <div className="page">
-      <Header
-        isAuth
-        onLogout={() => {
-          // сделать потом вывод
-        }}
-      />
+      <Header />
 
       <main className="page-content decorated-page">
         <div className="decorated-page__decor" aria-hidden="true">
@@ -223,7 +218,7 @@ export default function BookingPage() {
                   {selectedPlace.slots.map((slot) => (
                     <label
                       className={`custom-radio booking-form__date ${selectedSlotId === slot.id ? 'custom-radio--active' : ''
-                        }`}
+                      }`}
                       key={slot.id}
                     >
                       <input

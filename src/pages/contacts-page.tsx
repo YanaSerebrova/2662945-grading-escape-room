@@ -7,7 +7,7 @@ const companyPosition: [number, number] = [55.751244, 37.618423];
 export default function ContactsPage() {
   return (
     <div className="page">
-      <Header isAuth={false} onLogout={() => undefined} />
+      <Header />
 
       <main className="page-content decorated-page">
         <div className="decorated-page__decor" aria-hidden="true">

@@ -48,12 +48,7 @@ export default function MyBookingsPage() {
 
   return (
     <div className="page">
-      <Header
-        isAuth
-        onLogout={() => {
-          // сделать вывод
-        }}
-      />
+      <Header />
 
       <main className="page-content decorated-page">
         <div className="decorated-page__decor" aria-hidden="true">

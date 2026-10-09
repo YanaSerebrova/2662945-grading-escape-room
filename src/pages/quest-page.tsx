@@ -10,7 +10,7 @@ export default function QuestPage() {
 
   return (
     <div className="page">
-      <Header isAuth={false} onLogout={() => undefined} />
+      <Header />
 
       <main className="page-content decorated-page quest-page">
         <div className="decorated-page__decor" aria-hidden="true">

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { API_URL } from '../constants/api';
+import { EmailKey, fetchApi, TokenKey } from '../api';
 
 type LoginResponseDto = {
   email: string;
@@ -15,9 +15,9 @@ type UserState = {
 };
 
 const initialState: UserState = {
-  token: localStorage.getItem('escape-room-token') || null,
-  email: localStorage.getItem('escape-room-email') || null,
-  isAuth: !!localStorage.getItem('escape-room-token'),
+  token: localStorage.getItem(TokenKey) || null,
+  email: localStorage.getItem(EmailKey) || null,
+  isAuth: !!localStorage.getItem(TokenKey),
   isLoading: false,
   error: null,
 };
@@ -26,29 +26,24 @@ export const loginAction = createAsyncThunk<
   LoginResponseDto,
   { email: string; password: string },
   { rejectValue: string }
->('user/login', async ({ email, password }, { rejectWithValue }) => {
-  try {
-    const response = await fetch(`${API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Неверный логин или пароль');
+>(
+  'user/login',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const data = await fetchApi<LoginResponseDto>('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      localStorage.setItem(TokenKey, data.token);
+      localStorage.setItem(EmailKey, data.email);
+      return data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Неверный логин или пароль',
+      );
     }
-
-    const data = (await response.json()) as LoginResponseDto;
-    localStorage.setItem('escape-room-token', data.token);
-    localStorage.setItem('escape-room-email', data.email);
-
-    return data;
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : 'Ошибка сети',
-    );
-  }
-});
+  },
+);
 
 export const logoutAction = createAsyncThunk<
   void,
@@ -57,13 +52,13 @@ export const logoutAction = createAsyncThunk<
 >('user/logout', async (_, { getState }) => {
   const { token } = getState().user;
   if (token) {
-    await fetch(`${API_URL}/logout`, {
+    await fetchApi<void>('/logout', {
       method: 'DELETE',
-      headers: { 'X-Token': token },
+      requireAuth: true,
     });
   }
-  localStorage.removeItem('escape-room-token');
-  localStorage.removeItem('escape-room-email');
+  localStorage.removeItem(TokenKey);
+  localStorage.removeItem(EmailKey);
 });
 
 const userSlice = createSlice({

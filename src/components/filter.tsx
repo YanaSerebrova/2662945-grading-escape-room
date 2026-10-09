@@ -19,7 +19,7 @@ const QUEST_TYPES = [
 const QUEST_LEVELS = [
   { value: 'any', label: 'Любой' },
   { value: 'easy', label: 'Лёгкий' },
-  { value: 'middle', label: 'Средний' },
+  { value: 'medium', label: 'Средний' },
   { value: 'hard', label: 'Сложный' },
 ] as const;
 
