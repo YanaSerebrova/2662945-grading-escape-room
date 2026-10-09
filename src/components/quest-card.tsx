@@ -12,11 +12,11 @@ export function QuestCard({ quest }: QuestCardProps) {
         <picture>
           <source
             type="image/webp"
-            srcSet={`${quest.previewImgWebp}, ${quest.previewImgWebp2x} 2x`}
+            srcSet={`${quest.previewImgWebp ?? ''}, ${quest.previewImgWebp2x ?? ''} 2x`}
           />
           <img
             src={quest.previewImg}
-            srcSet={`${quest.previewImg2x} 2x`}
+            srcSet={`${quest.previewImg2x ?? ''} 2x`}
             width="344"
             height="232"
             alt={quest.previewImgAlt}
@@ -34,7 +34,7 @@ export function QuestCard({ quest }: QuestCardProps) {
             <svg width="11" height="14" aria-hidden="true">
               <use xlinkHref="#icon-person"></use>
             </svg>
-            {quest.peopleMinCount}&ndash;{quest.peopleMaxCount} чел
+            {String(quest.peopleMinCount)}&ndash;{String(quest.peopleMaxCount)} чел
           </li>
           <li className="tags__item">
             <svg width="14" height="14" aria-hidden="true">

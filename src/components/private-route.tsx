@@ -1,12 +1,12 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { ReactNode } from 'react';
+import { ReactElement } from 'react';
 
 type PrivateRouteProps = {
   isAuth: boolean;
-  children: ReactNode;
+  children: ReactElement;
 };
 
-export function PrivateRoute({ isAuth, children }: PrivateRouteProps) {
+export function PrivateRoute({ isAuth, children }: PrivateRouteProps): ReactElement {
   const location = useLocation();
   return isAuth ? children : <Navigate to="/auth" state={{ from: location }} replace />;
 }
