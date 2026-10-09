@@ -223,7 +223,7 @@ export default function BookingPage() {
                   {selectedPlace.slots.map((slot) => (
                     <label
                       className={`custom-radio booking-form__date ${selectedSlotId === slot.id ? 'custom-radio--active' : ''
-                      }`}
+                        }`}
                       key={slot.id}
                     >
                       <input

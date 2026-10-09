@@ -1,36 +1,12 @@
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Footer } from '../components/footer';
-
-type Quest = {
-  id: number;
-  title: string;
-  theme: string;
-  level: string;
-  minPlayers: number;
-  maxPlayers: number;
-  description: string;
-  image: string;
-};
-
-const quests: Quest[] = [
-  {
-    id: 1704,
-    title: 'Маньяк',
-    theme: 'Ужасы',
-    level: 'сложный',
-    minPlayers: 3,
-    maxPlayers: 6,
-    description:
-      'Вы оказываетесь в старом доме, где много лет назад происходили загадочные события. Вам предстоит исследовать комнаты, искать подсказки и выбраться до того, как хозяин дома вернётся.',
-    image: '/img/content/maniac/maniac-size-m.jpg',
-  },
-];
+import { mockQuests } from '../mocks/quests';
 
 export default function QuestPage() {
   const { id } = useParams<{ id: string }>();
 
-  const quest = quests.find((item) => item.id === Number(id));
+  const quest = mockQuests.find((item) => item.id === id);
 
   return (
     <div className="page">
@@ -61,7 +37,7 @@ export default function QuestPage() {
               </h1>
 
               <p className="subtitle quest-page__subtitle">
-                {quest.theme}
+                {quest.typeLabel}
               </p>
 
               <ul className="tags tags--size-l quest-page__tags">
@@ -69,19 +45,19 @@ export default function QuestPage() {
                   <svg width="11" height="14" aria-hidden="true">
                     <use xlinkHref="#icon-person" />
                   </svg>
-                  {quest.minPlayers}–{quest.maxPlayers}
+                  {quest.peopleMinCount}–{quest.peopleMaxCount}
                 </li>
 
                 <li className="tags__item">
                   <svg width="14" height="14" aria-hidden="true">
                     <use xlinkHref="#icon-level" />
                   </svg>
-                  {quest.level}
+                  {quest.levelLabel}
                 </li>
               </ul>
 
               <p className="quest-page__description">
-                {quest.description}
+                Описание квеста будет добавлено позже, когда подключим API.
               </p>
 
               <Link
@@ -109,3 +85,4 @@ export default function QuestPage() {
     </div>
   );
 }
+

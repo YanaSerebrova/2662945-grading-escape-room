@@ -31,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="page">
       <Header isAuth={false} onLogout={() => {
-        // TODO: добавить logout
+        // добавить logout
       }}
       />
 
