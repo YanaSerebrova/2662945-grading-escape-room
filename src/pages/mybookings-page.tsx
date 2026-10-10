@@ -1,55 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Footer } from '../components/footer';
+import { useAppDispatch, useAppSelector } from '../store';
+import { fetchReservationsAction, deleteReservationAction } from '../store/reservations-slice';
 
-type Booking = {
-  id: number;
-  questId: number;
-  address: string;
-  personCount: number;
+// Вспомогательная карта для красивого отображения уровня сложности
+const LEVEL_MAP: Record<string, string> = {
+  easy: 'Лёгкий',
+  medium: 'Средний',
+  hard: 'Сложный',
 };
-
-type Quest = {
-  id: number;
-  title: string;
-  image: string;
-  level: string;
-};
-
-const quests: Quest[] = [
-  {
-    id: 1704,
-    title: 'Маньяк',
-    image: '/img/content/maniac/maniac-size-s.jpg',
-    level: 'сложный',
-  },
-];
 
 export default function MyBookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const dispatch = useAppDispatch();
+  const { reservations, isLoading, error } = useAppSelector((state) => state.reservations);
 
   useEffect(() => {
-    const savedBookings = JSON.parse(
-      localStorage.getItem('bookings') || '[]',
-    ) as Booking[];
+    dispatch(fetchReservationsAction());
+  }, [dispatch]);
 
-    setBookings(savedBookings);
-  }, []);
-
-  const handleCancel = (bookingId: number) => {
-    const updatedBookings = bookings.filter(
-      (booking) => booking.id !== bookingId,
-    );
-
-    setBookings(updatedBookings);
-    localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+  const handleCancel = (reservationId: string) => {
+    dispatch(deleteReservationAction(reservationId));
   };
+
+  if (isLoading && reservations.length === 0) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p>Загрузка бронирований...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p className="form-error" style={{ color: 'red' }}>Ошибка: {error}</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="page">
       <Header />
-
       <main className="page-content decorated-page">
         <div className="decorated-page__decor" aria-hidden="true">
           <picture>
@@ -57,7 +62,6 @@ export default function MyBookingsPage() {
               type="image/webp"
               srcSet="/img/content/maniac/maniac-bg-size-m.webp"
             />
-
             <img
               src="/img/content/maniac/maniac-bg-size-m.jpg"
               width="1366"
@@ -66,7 +70,6 @@ export default function MyBookingsPage() {
             />
           </picture>
         </div>
-
         <div className="container">
           <div className="page-content__title-wrapper">
             <h1 className="title title--size-m page-content__title">
@@ -74,78 +77,61 @@ export default function MyBookingsPage() {
             </h1>
           </div>
 
-          {bookings.length === 0 ? (
+          {reservations.length === 0 ? (
             <div className="empty-state">
               <p>У вас пока нет забронированных квестов.</p>
-
               <Link className="btn btn--accent" to="/">
                 Перейти в каталог
               </Link>
             </div>
           ) : (
             <div className="cards-grid">
-              {bookings.map((booking) => {
-                const quest = quests.find(
-                  (item) => item.id === booking.questId,
-                );
-
-                if (!quest) {
-                  return null;
-                }
+              {reservations.map((reservation) => {
+                const displayLevel = LEVEL_MAP[reservation.questLevel] || reservation.questLevel;
 
                 return (
                   <article
                     className="quest-card"
-                    key={booking.id}
+                    key={reservation.id}
                   >
                     <div className="quest-card__img">
                       <img
-                        src={quest.image}
+                        src={reservation.questPreviewImg}
                         width="344"
                         height="232"
-                        alt={quest.title}
+                        alt={reservation.questTitle}
                       />
                     </div>
 
                     <div className="quest-card__content">
                       <div className="quest-card__info-wrapper">
                         <h2 className="quest-card__link">
-                          {quest.title}
+                          {reservation.questTitle}
                         </h2>
-
                         <p className="quest-card__info">
-                          {booking.address}
+                          {reservation.address}
                         </p>
                       </div>
 
                       <ul className="tags quest-card__tags">
                         <li className="tags__item">
-                          <svg
-                            width="11"
-                            height="14"
-                            aria-hidden="true"
-                          >
+                          <svg width="11" height="14" aria-hidden="true">
                             <use xlinkHref="#icon-person" />
                           </svg>
-                          {booking.personCount}
+                          {reservation.peopleCount} чел
                         </li>
-
                         <li className="tags__item">
-                          <svg
-                            width="14"
-                            height="14"
-                            aria-hidden="true"
-                          >
+                          <svg width="14" height="14" aria-hidden="true">
                             <use xlinkHref="#icon-level" />
                           </svg>
-                          {quest.level}
+                          {displayLevel}
                         </li>
                       </ul>
 
                       <button
                         className="btn btn--accent btn--secondary quest-card__btn"
                         type="button"
-                        onClick={() => handleCancel(booking.id)}
+                        onClick={() => handleCancel(reservation.id)}
                       >
                         Отменить
                       </button>
@@ -157,7 +143,6 @@ export default function MyBookingsPage() {
           )}
         </div>
       </main>
-
       <Footer />
     </div>
   );
