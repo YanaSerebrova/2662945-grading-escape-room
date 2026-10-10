@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchApi } from '../api';
-import { Quest } from '../types/quest';
+import { Quest, QuestDto } from '../types/quest';
 import { QuestPreviewDto, adaptQuestToClient } from '../adapters/quest-adapter';
 
 type QuestsState = {
@@ -21,6 +21,18 @@ export const fetchQuestsAction = createAsyncThunk<Quest[], void>(
     try {
       const data = await fetchApi<QuestPreviewDto[]>('/quest');
       return data.map(adaptQuestToClient);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
+    }
+  },
+);
+
+export const fetchQuestByIdAction = createAsyncThunk<Quest, string>(
+  'quests/fetchQuestById',
+  async (questId, { rejectWithValue }) => {
+    try {
+      const data = await fetchApi<QuestDto>(`/quest/${questId}`);
+      return adaptQuestToClient(data);
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
     }

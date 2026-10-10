@@ -67,7 +67,6 @@ export default function LoginPage() {
                   {error}
                 </p>
               )}
-
               <div className="login-form__inputs">
                 <div className="custom-input login-form__input">
                   <label className="custom-input__label" htmlFor="email">
@@ -89,7 +88,6 @@ export default function LoginPage() {
                     <span className="form-error">{errors.email.message}</span>
                   )}
                 </div>
-
                 <div className="custom-input login-form__input">
                   <label className="custom-input__label" htmlFor="password">
                     Пароль
@@ -113,7 +111,6 @@ export default function LoginPage() {
                   )}
                 </div>
               </div>
-
               <button
                 className="btn btn--accent btn--general login-form__submit"
                 type="submit"
@@ -121,7 +118,6 @@ export default function LoginPage() {
               >
                 {isLoading ? 'Вход...' : 'Войти'}
               </button>
-
               <label className="custom-checkbox login-form__checkbox">
                 <input
                   type="checkbox"
@@ -154,5 +150,4 @@ export default function LoginPage() {
     </div>
   );
 }
-
 

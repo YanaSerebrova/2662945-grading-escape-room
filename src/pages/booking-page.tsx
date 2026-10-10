@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -11,77 +11,27 @@ import {
 import L from 'leaflet';
 import { Header } from '../components/header';
 import { Footer } from '../components/footer';
-
-type Slot = {
-  id: number;
-  time: string;
-  isAvailable: boolean;
-};
-
-type Place = {
-  id: number;
-  address: string;
-  coordinates: [number, number];
-  slots: Slot[];
-};
-
-type Booking = {
-  id: number;
-  questId: number;
-  address: string;
-  slotId: number;
-  name: string;
-  phone: string;
-  personCount: number;
-};
+import { useAppDispatch, useAppSelector } from '../store';
+import { fetchBookingPlacesAction, createBookingAction } from '../store/booking-slice';
+import { BookingRequestDto } from '../types/booking';
 
 type BookingFormValues = {
   name: string;
   phone: string;
   personCount: number;
+  withChildren: boolean;
   agreement: boolean;
 };
 
-const places: Place[] = [
-  {
-    id: 1,
-    address: 'Москва, улица Большая Дмитровка, дом 10',
-    coordinates: [55.751244, 37.618423],
-    slots: [
-      { id: 1, time: '14:00', isAvailable: true },
-      { id: 2, time: '15:30', isAvailable: true },
-      { id: 3, time: '17:00', isAvailable: false },
-      { id: 4, time: '19:30', isAvailable: true },
-    ],
-  },
-  {
-    id: 2,
-    address: 'Москва, улица Тверская, дом 15',
-    coordinates: [55.7652, 37.6053],
-    slots: [
-      { id: 5, time: '12:00', isAvailable: true },
-      { id: 6, time: '16:00', isAvailable: false },
-      { id: 7, time: '20:00', isAvailable: true },
-    ],
-  },
-];
-
-function MapPositionUpdater({
-  position,
-}: {
-  position: [number, number];
-}) {
+function MapPositionUpdater({ position }: { position: [number, number] }) {
   const map = useMap();
   map.setView(position);
-
   return null;
 }
 
 function createMarkerIcon(isSelected: boolean) {
   return L.divIcon({
-    className: isSelected
-      ? 'booking-marker booking-marker--active'
-      : 'booking-marker',
+    className: isSelected ? 'booking-marker booking-marker--active' : 'booking-marker',
     html: '<span></span>',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
@@ -91,12 +41,15 @@ function createMarkerIcon(isSelected: boolean) {
 export default function BookingPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const dispatch = useAppDispatch();
+  const { places, isLoading, error } = useAppSelector((state) => state.booking);
+  const quests = useAppSelector((state) => state.quests.quests);
 
-  const [selectedPlaceId, setSelectedPlaceId] = useState(places[0].id);
-  const [selectedSlotId, setSelectedSlotId] = useState<number | null>(null);
+  const quest = quests.find((q) => q.id === id);
 
-  const selectedPlace =
-    places.find((place) => place.id === selectedPlaceId) || places[0];
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selectedDate] = useState<'today' | 'tomorrow'>('today');
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const {
     register,
@@ -104,282 +57,245 @@ export default function BookingPage() {
     formState: { errors },
   } = useForm<BookingFormValues>();
 
-  const onSubmit = (data: BookingFormValues) => {
-    if (!selectedSlotId) {
-      // eslint-disable-next-line no-alert
-      alert('Выберите время бронирования');
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchBookingPlacesAction(id));
+    }
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    if (places.length > 0 && !selectedPlaceId) {
+      setSelectedPlaceId(places[0].id);
+    }
+  }, [places, selectedPlaceId]);
+
+  const selectedPlace = places.find((place) => place.id === selectedPlaceId);
+  const slots = selectedPlace?.slots[selectedDate] || [];
+
+  const onSubmit = async (data: BookingFormValues) => {
+    if (!selectedPlaceId || !selectedTime || !quest) {
       return;
     }
 
-    const bookings = JSON.parse(
-      localStorage.getItem('bookings') || '[]',
-    ) as Booking[];
-
-    bookings.push({
-      id: Date.now(),
-      questId: Number(id),
-      address: selectedPlace.address,
-      slotId: selectedSlotId,
-      name: data.name,
+    const bookingData: BookingRequestDto = {
+      date: selectedDate,
+      time: selectedTime,
+      contactPerson: data.name,
       phone: data.phone,
-      personCount: Number(data.personCount),
-    } as Booking);
+      withChildren: data.withChildren,
+      peopleCount: data.personCount,
+      placeId: selectedPlaceId,
+    };
 
-    localStorage.setItem('bookings', JSON.stringify(bookings));
-
-    navigate('/my-quests');
+    if (!id) {
+      return;
+    }
+    const result = await dispatch(createBookingAction({ questId: id, data: bookingData }));
+    if (createBookingAction.fulfilled.match(result)) {
+      navigate('/my-quests');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p>Загрузка...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p className="form-error" style={{ color: 'red' }}>Ошибка: {error}</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!quest) {
+    return (
+      <div className="page">
+        <Header />
+        <main className="page-content">
+          <div className="container">
+            <p>Квест не найден</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="page">
       <Header />
-
       <main className="page-content decorated-page">
         <div className="decorated-page__decor" aria-hidden="true">
           <picture>
-            <source
-              type="image/webp"
-              srcSet="/img/content/maniac/maniac-bg-size-m.webp"
-            />
-
-            <img
-              src="/img/content/maniac/maniac-bg-size-m.jpg"
-              width="1366"
-              height="1959"
-              alt=""
-            />
+            <source type="image/webp" srcSet={quest.coverImgWebp} />
+            <img src={quest.coverImg} width="1366" height="1959" alt="" />
           </picture>
         </div>
-
         <div className="container container--size-s">
           <div className="page-content__title-wrapper">
             <h1 className="subtitle subtitle--size-l page-content__subtitle">
               Бронирование
             </h1>
-
             <p className="title title--size-m title--uppercase page-content__title">
-              Выберите место и время
+              {quest.title}
             </p>
           </div>
-
           <div className="page-content__item">
             <section className="booking-map">
               <div className="map">
                 <MapContainer
-                  center={selectedPlace.coordinates}
+                  center={selectedPlace?.location.coords || [55.751244, 37.618423]}
                   zoom={14}
                   scrollWheelZoom={false}
                   style={{ width: '100%', height: '400px' }}
                 >
-                  <MapPositionUpdater
-                    position={selectedPlace.coordinates}
-                  />
-
+                  <MapPositionUpdater position={selectedPlace?.location.coords || [55.751244, 37.618423]} />
                   <TileLayer
                     attribution='&copy; OpenStreetMap contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-
                   {places.map((place) => (
                     <Marker
                       key={place.id}
-                      position={place.coordinates}
-                      icon={createMarkerIcon(
-                        place.id === selectedPlaceId,
-                      )}
+                      position={place.location.coords}
+                      icon={createMarkerIcon(place.id === selectedPlaceId)}
                       eventHandlers={{
                         click: () => {
                           setSelectedPlaceId(place.id);
-                          setSelectedSlotId(null);
+                          setSelectedTime(null);
                         },
                       }}
                     >
-                      <Popup>{place.address}</Popup>
+                      <Popup>{place.location.address}</Popup>
                     </Marker>
                   ))}
                 </MapContainer>
               </div>
-
-              <p className="booking-map__address">
-                {selectedPlace.address}
-              </p>
+              <p className="booking-map__address">{selectedPlace?.location.address}</p>
             </section>
-
-            <form
-              className="booking-form"
-              onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-            >
-              <fieldset className="booking-form__date-section">
-                <legend className="booking-form__date-title">
-                  Выберите время
-                </legend>
-
-                <div className="booking-form__date-inner-wrapper">
-                  {selectedPlace.slots.map((slot) => (
-                    <label
-                      className={`custom-radio booking-form__date ${selectedSlotId === slot.id ? 'custom-radio--active' : ''
-                      }`}
-                      key={slot.id}
-                    >
-                      <input
-                        type="radio"
-                        name="slot"
-                        value={slot.id}
-                        disabled={!slot.isAvailable}
-                        checked={selectedSlotId === slot.id}
-                        onChange={() => setSelectedSlotId(slot.id)}
-                      />
-                      <span className="custom-radio__label">
-                        {slot.time}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
+            <form className="booking-form" onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
               <fieldset className="booking-form__section">
-                <legend className="visually-hidden">
-                  Данные пользователя
-                </legend>
-
+                <legend className="visually-hidden">Выбор даты и времени</legend>
+                <fieldset className="booking-form__date-section">
+                  <legend className="booking-form__date-title">Сегодня</legend>
+                  <div className="booking-form__date-inner-wrapper">
+                    {slots.map((slot) => (
+                      <label
+                        key={slot.time}
+                        className={`custom-radio booking-form__date ${selectedTime === slot.time ? 'custom-radio--active' : ''}`}
+                      >
+                        <input
+                          type="radio"
+                          name="time"
+                          value={slot.time}
+                          disabled={!slot.isAvailable}
+                          checked={selectedTime === slot.time}
+                          onChange={() => setSelectedTime(slot.time)}
+                        />
+                        <span className="custom-radio__label">{slot.time}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </fieldset>
+              <fieldset className="booking-form__section">
+                <legend className="visually-hidden">Контактная информация</legend>
                 <div className="custom-input booking-form__input">
-                  <label
-                    className="custom-input__label"
-                    htmlFor="name"
-                  >
-                    Имя
-                  </label>
-
+                  <label className="custom-input__label" htmlFor="name">Ваше имя</label>
                   <input
                     id="name"
                     type="text"
-                    placeholder="Введите имя"
+                    placeholder="Имя"
                     {...register('name', {
                       required: 'Введите имя',
-                      minLength: {
-                        value: 1,
-                        message: 'Введите имя',
-                      },
-                      maxLength: {
-                        value: 15,
-                        message: 'Максимум 15 символов',
-                      },
-                      pattern: {
-                        value: /^[А-Яа-яA-Za-zёЁ -]+$/,
-                        message: 'Используйте только буквы',
-                      },
+                      minLength: { value: 1, message: 'Введите имя' },
+                      maxLength: { value: 15, message: 'Максимум 15 символов' },
+                      pattern: { value: /^[А-Яа-яA-Za-zёЁ -]+$/, message: 'Используйте только буквы' },
                     })}
                   />
-
-                  {errors.name && (
-                    <span className="form-error">
-                      {errors.name.message}
-                    </span>
-                  )}
+                  {errors.name && <span className="form-error">{errors.name.message}</span>}
                 </div>
-
                 <div className="custom-input booking-form__input">
-                  <label
-                    className="custom-input__label"
-                    htmlFor="phone"
-                  >
-                    Телефон
-                  </label>
-
+                  <label className="custom-input__label" htmlFor="phone">Контактный телефон</label>
                   <input
                     id="phone"
                     type="tel"
                     placeholder="+7 (000) 000-00-00"
                     {...register('phone', {
                       required: 'Введите номер телефона',
-                      pattern: {
-                        value:
-                          /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/,
-                        message: 'Формат: +7 (000) 000-00-00',
-                      },
+                      pattern: { value: /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/, message: 'Формат: +7 (000) 000-00-00' },
                     })}
                   />
-
-                  {errors.phone && (
-                    <span className="form-error">
-                      {errors.phone.message}
-                    </span>
-                  )}
+                  {errors.phone && <span className="form-error">{errors.phone.message}</span>}
                 </div>
-
                 <div className="custom-input booking-form__input">
-                  <label
-                    className="custom-input__label"
-                    htmlFor="personCount"
-                  >
-                    Количество участников
-                  </label>
-
+                  <label className="custom-input__label" htmlFor="personCount">Количество участников</label>
                   <input
                     id="personCount"
                     type="number"
-                    min={3}
-                    max={6}
+                    min={quest.peopleMinCount}
+                    max={quest.peopleMaxCount}
                     placeholder="Количество участников"
                     {...register('personCount', {
                       required: 'Укажите количество участников',
                       valueAsNumber: true,
-                      min: {
-                        value: 3,
-                        message: 'Минимум 3 участника',
-                      },
-                      max: {
-                        value: 6,
-                        message: 'Максимум 6 участников',
-                      },
+                      min: { value: quest.peopleMinCount, message: `Минимум ${quest.peopleMinCount} участника` },
+                      max: { value: quest.peopleMaxCount, message: `Максимум ${quest.peopleMaxCount} участников` },
                     })}
                   />
-
-                  {errors.personCount && (
-                    <span className="form-error">
-                      {errors.personCount.message}
-                    </span>
-                  )}
+                  {errors.personCount && <span className="form-error">{errors.personCount.message}</span>}
                 </div>
-
-                <label className="custom-checkbox booking-form__checkbox booking-form__checkbox--agreement">
-                  <input
-                    type="checkbox"
-                    {...register('agreement', {
-                      required: 'Подтвердите согласие',
-                    })}
-                  />
-
+                <label className="custom-checkbox booking-form__checkbox booking-form__checkbox--children">
+                  <input type="checkbox" {...register('withChildren')} />
                   <span className="custom-checkbox__icon">
                     <svg width="20" height="17" aria-hidden="true">
                       <use xlinkHref="#icon-tick" />
                     </svg>
                   </span>
-
-                  <span className="custom-checkbox__label">
-                    Я согласен с правилами бронирования
-                  </span>
+                  <span className="custom-checkbox__label">Со мной будут дети</span>
                 </label>
-
-                {errors.agreement && (
-                  <span className="form-error">
-                    {errors.agreement.message}
-                  </span>
-                )}
               </fieldset>
-
-              <button
-                className="btn btn--accent btn--cta booking-form__submit"
-                type="submit"
-              >
+              <button className="btn btn--accent btn--cta booking-form__submit" type="submit">
                 Забронировать
               </button>
+              <label className="custom-checkbox booking-form__checkbox booking-form__checkbox--agreement">
+                <input
+                  type="checkbox"
+                  {...register('agreement', { required: 'Подтвердите согласие' })}
+                />
+                <span className="custom-checkbox__icon">
+                  <svg width="20" height="17" aria-hidden="true">
+                    <use xlinkHref="#icon-tick" />
+                  </svg>
+                </span>
+                <span className="custom-checkbox__label">
+                  Я согласен с правилами обработки персональных данных и пользовательским соглашением
+                </span>
+              </label>
+              {errors.agreement && <span className="form-error">{errors.agreement.message}</span>}
             </form>
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
 }
+

@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import userReducer from './user-slice';
 import questsReducer from './quests-slice';
+import bookingReducer from './booking-slice';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
     quests: questsReducer,
+    booking: bookingReducer,
   },
 });
 

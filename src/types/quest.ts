@@ -23,4 +23,16 @@ export interface Quest {
   peopleMaxCount: number;
 }
 
+export type QuestDto = {
+  id: string;
+  title: string;
+  description: string;
+  previewImg: string;
+  previewImgWebp: string;
+  coverImg: string;
+  coverImgWebp: string;
+  level: QuestLevel;
+  type: QuestType;
+  peopleMinMax: [number, number];
+};
 
