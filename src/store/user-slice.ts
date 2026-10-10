@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { EmailKey, fetchApi, TokenKey } from '../api';
+import { API_URL, AUTH_TOKEN_KEY, AUTH_EMAIL_KEY } from '../constants/api';
 
 type LoginResponseDto = {
   email: string;
@@ -15,9 +15,9 @@ type UserState = {
 };
 
 const initialState: UserState = {
-  token: localStorage.getItem(TokenKey) || null,
-  email: localStorage.getItem(EmailKey) || null,
-  isAuth: !!localStorage.getItem(TokenKey),
+  token: localStorage.getItem(AUTH_TOKEN_KEY) || null,
+  email: localStorage.getItem(AUTH_EMAIL_KEY) || null,
+  isAuth: !!localStorage.getItem(AUTH_TOKEN_KEY),
   isLoading: false,
   error: null,
 };
@@ -26,24 +26,27 @@ export const loginAction = createAsyncThunk<
   LoginResponseDto,
   { email: string; password: string },
   { rejectValue: string }
->(
-  'user/login',
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      const data = await fetchApi<LoginResponseDto>('/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-      localStorage.setItem(TokenKey, data.token);
-      localStorage.setItem(EmailKey, data.email);
-      return data;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Неверный логин или пароль',
-      );
+>('user/login', async ({ email, password }, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Неверный логин или пароль');
     }
-  },
-);
+
+    const data = (await response.json()) as LoginResponseDto;
+    localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+    localStorage.setItem(AUTH_EMAIL_KEY, data.email);
+
+    return data;
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
+  }
+});
 
 export const logoutAction = createAsyncThunk<
   void,
@@ -52,13 +55,13 @@ export const logoutAction = createAsyncThunk<
 >('user/logout', async (_, { getState }) => {
   const { token } = getState().user;
   if (token) {
-    await fetchApi<void>('/logout', {
+    await fetch(`${API_URL}/logout`, {
       method: 'DELETE',
-      requireAuth: true,
+      headers: { 'X-Token': token },
     });
   }
-  localStorage.removeItem(TokenKey);
-  localStorage.removeItem(EmailKey);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_EMAIL_KEY);
 });
 
 const userSlice = createSlice({
@@ -71,15 +74,12 @@ const userSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        loginAction.fulfilled,
-        (state, action: PayloadAction<LoginResponseDto>) => {
-          state.isLoading = false;
-          state.isAuth = true;
-          state.token = action.payload.token;
-          state.email = action.payload.email;
-        },
-      )
+      .addCase(loginAction.fulfilled, (state, action: PayloadAction<{ email: string; token: string }>) => {
+        state.isLoading = false;
+        state.isAuth = true;
+        state.token = action.payload.token;
+        state.email = action.payload.email;
+      })
       .addCase(loginAction.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;

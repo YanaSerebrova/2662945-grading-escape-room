@@ -8,7 +8,7 @@ export function Header() {
   const dispatch = useAppDispatch();
   const isAuth = useAppSelector((state) => state.user.isAuth);
 
-  const isActive = (path: string) => location.pathname === path ? ' active' : '';
+  const isActive = (path: string) => (location.pathname === path ? ' active' : '');
 
   const handleLogout = () => {
     dispatch(logoutAction());

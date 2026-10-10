@@ -67,6 +67,7 @@ export default function LoginPage() {
                   {error}
                 </p>
               )}
+
               <div className="login-form__inputs">
                 <div className="custom-input login-form__input">
                   <label className="custom-input__label" htmlFor="email">
@@ -88,6 +89,7 @@ export default function LoginPage() {
                     <span className="form-error">{errors.email.message}</span>
                   )}
                 </div>
+
                 <div className="custom-input login-form__input">
                   <label className="custom-input__label" htmlFor="password">
                     Пароль
@@ -98,14 +100,8 @@ export default function LoginPage() {
                     placeholder="Пароль"
                     {...register('password', {
                       required: 'Введите пароль',
-                      minLength: {
-                        value: 3,
-                        message: 'Минимум 3 символа',
-                      },
-                      maxLength: {
-                        value: 15,
-                        message: 'Максимум 15 символов',
-                      },
+                      minLength: { value: 3, message: 'Минимум 3 символа' },
+                      maxLength: { value: 15, message: 'Максимум 15 символов' },
                       pattern: {
                         value: /^(?=.*[A-Za-zА-Яа-я])(?=.*\d).+$/,
                         message: 'Пароль должен содержать букву и цифру',
@@ -117,6 +113,7 @@ export default function LoginPage() {
                   )}
                 </div>
               </div>
+
               <button
                 className="btn btn--accent btn--general login-form__submit"
                 type="submit"
@@ -124,13 +121,12 @@ export default function LoginPage() {
               >
                 {isLoading ? 'Вход...' : 'Войти'}
               </button>
+
               <label className="custom-checkbox login-form__checkbox">
                 <input
                   type="checkbox"
                   id="id-order-agreement"
-                  {...register('agreement', {
-                    required: 'Подтвердите согласие',
-                  })}
+                  {...register('agreement', { required: 'Подтвердите согласие' })}
                 />
                 <span className="custom-checkbox__icon">
                   <svg width="20" height="17" aria-hidden="true">
