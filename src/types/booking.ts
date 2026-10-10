@@ -72,3 +72,4 @@ export type BookingResponseDto = BookingRequestDto & {
     peopleMinMax: [number, number];
   };
 };
+

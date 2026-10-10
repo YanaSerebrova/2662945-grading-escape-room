@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store';
 import { logoutAction } from '../store/user-slice';
 import { Logo } from './logo';
+import { AppRoute } from '../api';
 
 export function Header() {
   const location = useLocation();
@@ -46,7 +47,7 @@ export function Header() {
               Выйти
             </button>
           ) : (
-            <Link className="btn header__side-item header__login-btn" to="/auth">
+            <Link className="btn header__side-item header__login-btn" to={AppRoute.Auth}>
               Вход
             </Link>
           )}

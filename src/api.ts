@@ -3,7 +3,7 @@ import { API_URL } from './constants/api';
 export const AppRoute = {
   Root: '/',
   Contacts: '/contacts',
-  Auth: '/auth',
+  Auth: '/login',
   Quest: '/quest/:id',
   Booking: '/quest/:id/booking',
   MyQuests: '/my-quests',

@@ -14,12 +14,10 @@ const initialState: ReservationsState = {
   error: null,
 };
 
-// Получение списка бронирований
 export const fetchReservationsAction = createAsyncThunk<Reservation[], void>(
   'reservations/fetch',
   async (_, { rejectWithValue }) => {
     try {
-      // requireAuth: true автоматически добавит заголовок X-Token
       const data = await fetchApi<Reservation[]>('/reservation', { requireAuth: true });
       return data;
     } catch (error) {
@@ -28,7 +26,6 @@ export const fetchReservationsAction = createAsyncThunk<Reservation[], void>(
   }
 );
 
-// Удаление бронирования
 export const deleteReservationAction = createAsyncThunk<void, string>(
   'reservations/delete',
   async (reservationId, { rejectWithValue, dispatch }) => {
@@ -37,7 +34,6 @@ export const deleteReservationAction = createAsyncThunk<void, string>(
         method: 'DELETE',
         requireAuth: true,
       });
-      // После успешного удаления обновляем список
       dispatch(fetchReservationsAction());
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Ошибка удаления');

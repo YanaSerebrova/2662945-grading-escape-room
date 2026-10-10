@@ -68,7 +68,6 @@ const bookingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch places
       .addCase(fetchBookingPlacesAction.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -81,7 +80,6 @@ const bookingSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // Create booking
       .addCase(createBookingAction.pending, (state) => {
         state.isSubmitting = true;
         state.submitError = null;

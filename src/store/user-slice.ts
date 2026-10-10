@@ -74,7 +74,7 @@ const userSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(loginAction.fulfilled, (state, action: PayloadAction<{ email: string; token: string }>) => {
+      .addCase(loginAction.fulfilled, (state, action: PayloadAction<LoginResponseDto>) => {
         state.isLoading = false;
         state.isAuth = true;
         state.token = action.payload.token;

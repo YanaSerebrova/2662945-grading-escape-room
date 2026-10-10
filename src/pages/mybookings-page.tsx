@@ -5,7 +5,6 @@ import { Footer } from '../components/footer';
 import { useAppDispatch, useAppSelector } from '../store';
 import { fetchReservationsAction, deleteReservationAction } from '../store/reservations-slice';
 
-// Вспомогательная карта для красивого отображения уровня сложности
 const LEVEL_MAP: Record<string, string> = {
   easy: 'Лёгкий',
   medium: 'Средний',

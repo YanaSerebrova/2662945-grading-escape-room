@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './store';
+import { AppRoute } from './api';
 import CataloguePage from './pages/catalogue-page';
 import QuestPage from './pages/quest-page';
 import ContactsPage from './pages/contacts-page';
@@ -15,15 +16,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CataloguePage />} />
-        <Route path="/contacts" element={<ContactsPage />} />
+        <Route path={AppRoute.Root} element={<CataloguePage />} />
+        <Route path={AppRoute.Contacts} element={<ContactsPage />} />
         <Route
-          path="/auth"
-          element={isAuth ? <Navigate to="/" replace /> : <LoginPage />}
+          path={AppRoute.Auth}
+          element={isAuth ? <Navigate to={AppRoute.Root} replace /> : <LoginPage />}
         />
-        <Route path="/quest/:id" element={<QuestPage />} />
+        <Route path={AppRoute.Quest} element={<QuestPage />} />
         <Route
-          path="/quest/:id/booking"
+          path={AppRoute.Booking}
           element={
             <PrivateRoute isAuth={isAuth}>
               <BookingPage />
@@ -31,14 +32,14 @@ function App() {
           }
         />
         <Route
-          path="/my-quests"
+          path={AppRoute.MyQuests}
           element={
             <PrivateRoute isAuth={isAuth}>
               <MyBookingsPage />
             </PrivateRoute>
           }
         />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path={AppRoute.NotFound} element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
