@@ -6,7 +6,7 @@ type LoginResponseDto = {
   token: string;
 };
 
-type UserState = {
+export type UserState = {
   token: string | null;
   email: string | null;
   isAuth: boolean;

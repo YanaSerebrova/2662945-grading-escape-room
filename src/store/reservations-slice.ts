@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchApi } from '../api';
-import { Reservation } from '../types/booking';
+import { Reservation, ReservationDto } from '../types/booking';
+import { adaptReservationToClient } from '../adapters/reservation-adapter';
 
 type ReservationsState = {
   reservations: Reservation[];
@@ -18,8 +19,8 @@ export const fetchReservationsAction = createAsyncThunk<Reservation[], void>(
   'reservations/fetch',
   async (_, { rejectWithValue }) => {
     try {
-      const data = await fetchApi<Reservation[]>('/reservation', { requireAuth: true });
-      return data;
+      const data = await fetchApi<ReservationDto[]>('/reservation', { requireAuth: true });
+      return data.map(adaptReservationToClient);
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
     }
@@ -73,3 +74,4 @@ const reservationsSlice = createSlice({
 });
 
 export default reservationsSlice.reducer;
+

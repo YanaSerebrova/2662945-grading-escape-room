@@ -24,7 +24,6 @@ export interface Reservation {
   phone: string;
   withChildren: boolean;
   peopleCount: number;
-  placeId: string;
   address: string;
   locationLat: number;
   locationLng: number;
@@ -58,6 +57,29 @@ export type BookingRequestDto = {
 
 export type BookingResponseDto = BookingRequestDto & {
   id: string;
+  location: {
+    address: string;
+    coords: [number, number];
+  };
+  quest: {
+    id: string;
+    title: string;
+    previewImg: string;
+    previewImgWebp: string;
+    level: string;
+    type: string;
+    peopleMinMax: [number, number];
+  };
+};
+
+export type ReservationDto = {
+  id: string;
+  date: 'today' | 'tomorrow';
+  time: string;
+  contactPerson: string;
+  phone: string;
+  withChildren: boolean;
+  peopleCount: number;
   location: {
     address: string;
     coords: [number, number];

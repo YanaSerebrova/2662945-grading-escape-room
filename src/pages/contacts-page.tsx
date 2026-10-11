@@ -2,7 +2,7 @@ import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { Header } from '../components/header';
 import { Footer } from '../components/footer';
 
-const companyPosition: [number, number] = [55.751244, 37.618423];
+const companyPosition: [number, number] = [59.966786, 30.309376];
 
 export default function ContactsPage() {
   return (
@@ -44,7 +44,7 @@ export default function ContactsPage() {
 
                 <dd className="contacts__dd">
                   <address className="contacts__address">
-                    Москва, улица Большая Дмитровка, дом 10
+                    Санкт-Петербург, набережная реки Карповки, 5П
                   </address>
                 </dd>
               </div>
@@ -101,7 +101,7 @@ export default function ContactsPage() {
                     <Popup>
                       Escape Room
                       <br />
-                      Большая Дмитровка, 10
+                      Санкт-Петербург, наб. реки Карповки, 5П
                     </Popup>
                   </Marker>
                 </MapContainer>
