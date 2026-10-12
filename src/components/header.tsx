@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store';
+import type { RootState } from '../store'; // <-- ДОБАВЛЕН ИМПОРТ ТИПА
 import { logoutAction } from '../store/user-slice';
 import { Logo } from './logo';
 import { AppRoute } from '../api';
@@ -7,8 +8,7 @@ import { AppRoute } from '../api';
 export function Header() {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const isAuth = useAppSelector((state) => state.user.isAuth);
-
+  const isAuth = useAppSelector((state: RootState) => state.user.isAuth);
   const isActive = (path: string) => (location.pathname === path ? ' active' : '');
 
   const handleLogout = () => {
@@ -36,7 +36,6 @@ export function Header() {
             )}
           </ul>
         </nav>
-
         <div className="header__side-nav">
           {isAuth ? (
             <button
@@ -59,4 +58,5 @@ export function Header() {
     </header>
   );
 }
+
 

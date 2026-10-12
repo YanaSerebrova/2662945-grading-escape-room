@@ -44,7 +44,7 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<BookingFormValues>({
-    defaultValues: { withChildren: false }
+    defaultValues: { withChildren: true }
   });
 
   useEffect(() => {
@@ -188,7 +188,9 @@ export default function BookingPage() {
                   <span className="custom-checkbox__label">Со мной будут дети</span>
                 </label>
               </fieldset>
-
+              {!selectedTime && (
+                <span className="form-error">Выберите дату и время</span>
+              )}
               <button className="btn btn--accent btn--cta booking-form__submit" type="submit">Забронировать</button>
               <label className="custom-checkbox booking-form__checkbox booking-form__checkbox--agreement">
                 <input type="checkbox" {...register('agreement', { required: 'Подтвердите согласие' })} />

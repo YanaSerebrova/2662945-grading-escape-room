@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAppSelector } from './store';
+import { useAppDispatch, useAppSelector } from './store';
 import { AppRoute } from './api';
 import CataloguePage from './pages/catalogue-page';
 import QuestPage from './pages/quest-page';
@@ -9,9 +10,15 @@ import BookingPage from './pages/booking-page';
 import MyBookingsPage from './pages/mybookings-page';
 import NotFoundPage from './pages/not-found-page';
 import { PrivateRoute } from './components/private-route';
+import { checkAuthAction } from './store/user-slice';
 
 function App() {
   const isAuth = useAppSelector((state) => state.user.isAuth);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(checkAuthAction());
+  }, [dispatch]);
 
   return (
     <BrowserRouter>

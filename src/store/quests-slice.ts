@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchApi } from '../api';
-import { Quest, QuestDto } from '../types/quest';
-import { QuestPreviewDto, adaptQuestToClient } from '../adapters/quest-adapter';
+import type { Quest, QuestDto, QuestPreview, QuestPreviewDto } from '../types/quest';
+import { adaptQuestPreviewToClient, adaptQuestToClient } from '../adapters/quest-adapter';
 
 type QuestsState = {
-  quests: Quest[];
+  quests: QuestPreview[];
   currentQuest: Quest | null;
   isLoading: boolean;
   isQuestLoading: boolean;
@@ -19,12 +19,12 @@ const initialState: QuestsState = {
   error: null,
 };
 
-export const fetchQuestsAction = createAsyncThunk<Quest[], void>(
+export const fetchQuestsAction = createAsyncThunk<QuestPreview[], void>(
   'quests/fetchQuests',
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchApi<QuestPreviewDto[]>('/quest');
-      return data.map(adaptQuestToClient);
+      return data.map(adaptQuestPreviewToClient);
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Ошибка сети');
     }
@@ -63,6 +63,7 @@ const questsSlice = createSlice({
       })
       .addCase(fetchQuestByIdAction.pending, (state) => {
         state.isQuestLoading = true;
+        state.currentQuest = null;
         state.error = null;
       })
       .addCase(fetchQuestByIdAction.fulfilled, (state, action) => {
@@ -71,6 +72,7 @@ const questsSlice = createSlice({
       })
       .addCase(fetchQuestByIdAction.rejected, (state, action) => {
         state.isQuestLoading = false;
+        state.currentQuest = null;
         state.error = action.payload as string;
       });
   },

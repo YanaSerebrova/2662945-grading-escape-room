@@ -48,21 +48,56 @@ export const loginAction = createAsyncThunk<
   }
 });
 
+export const checkAuthAction = createAsyncThunk<
+  LoginResponseDto,
+  void,
+  { rejectValue: string }
+>('user/checkAuth', async (_, { rejectWithValue }) => {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+
+  if (!token) {
+    return rejectWithValue('Пользователь не авторизован');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      headers: { 'X-Token': token },
+    });
+
+    if (!response.ok) {
+      throw new Error('Пользователь не авторизован');
+    }
+    const data = (await response.json()) as LoginResponseDto;
+    localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+    localStorage.setItem(AUTH_EMAIL_KEY, data.email);
+
+    return data;
+  } catch (error) {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_EMAIL_KEY);
+
+    return rejectWithValue(error instanceof Error ? error.message : 'Ошибка авторизации');
+  }
+});
+
 export const logoutAction = createAsyncThunk<
   void,
   void,
   { state: { user: UserState } }
 >('user/logout', async (_, { getState }) => {
   const { token } = getState().user;
-  if (token) {
-    await fetch(`${API_URL}/logout`, {
-      method: 'DELETE',
-      headers: { 'X-Token': token },
-    });
+  try {
+    if (token) {
+      await fetch(`${API_URL}/logout`, {
+        method: 'DELETE',
+        headers: { 'X-Token': token },
+      });
+    }
+  } finally {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_EMAIL_KEY);
   }
-  localStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem(AUTH_EMAIL_KEY);
-});
+}); // <--- ВАЖНО: Здесь мы корректно закрываем logoutAction
 
 const userSlice = createSlice({
   name: 'user',
@@ -83,6 +118,17 @@ const userSlice = createSlice({
       .addCase(loginAction.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(checkAuthAction.fulfilled, (state, action: PayloadAction<LoginResponseDto>) => {
+        state.isAuth = true;
+        state.token = action.payload.token;
+        state.email = action.payload.email;
+        state.error = null;
+      })
+      .addCase(checkAuthAction.rejected, (state) => {
+        state.isAuth = false;
+        state.token = null;
+        state.email = null;
       })
       .addCase(logoutAction.fulfilled, (state) => {
         state.isAuth = false;

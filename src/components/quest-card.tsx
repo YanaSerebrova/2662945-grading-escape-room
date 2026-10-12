@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Quest } from '../types/quest';
+import type { QuestPreview } from '../types/quest';
 
 type QuestCardProps = {
-  quest: Quest;
+  quest: QuestPreview;
 };
 
 export function QuestCard({ quest }: QuestCardProps) {
@@ -12,11 +12,10 @@ export function QuestCard({ quest }: QuestCardProps) {
         <picture>
           <source
             type="image/webp"
-            srcSet={`${quest.previewImgWebp ?? ''}, ${quest.previewImgWebp2x ?? ''} 2x`}
+            srcSet={quest.previewImgWebp}
           />
           <img
             src={quest.previewImg}
-            srcSet={`${quest.previewImg2x ?? ''} 2x`}
             width="344"
             height="232"
             alt={quest.previewImgAlt}
@@ -47,3 +46,4 @@ export function QuestCard({ quest }: QuestCardProps) {
     </article>
   );
 }
+

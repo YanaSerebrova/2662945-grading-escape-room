@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { adaptQuestToClient, QuestPreviewDto } from './quest-adapter';
-import { QuestDto } from '../types/quest';
+import {
+  adaptQuestPreviewToClient,
+  adaptQuestToClient,
+} from './quest-adapter';
+import type { QuestDto, QuestPreviewDto } from '../types/quest';
 
 describe('Quest Adapter', () => {
   it('should correctly adapt QuestPreviewDto (list view)', () => {
@@ -14,7 +17,7 @@ describe('Quest Adapter', () => {
       peopleMinMax: [2, 5],
     };
 
-    const result = adaptQuestToClient(previewDto);
+    const result = adaptQuestPreviewToClient(previewDto);
 
     expect(result.id).toBe('1');
     expect(result.title).toBe('Склеп');
@@ -22,8 +25,7 @@ describe('Quest Adapter', () => {
     expect(result.levelLabel).toBe('Средний');
     expect(result.peopleMinCount).toBe(2);
     expect(result.peopleMaxCount).toBe(5);
-    expect(result.description).toBe('');
-    expect(result.coverImg).toBe('');
+    expect(result.previewImgAlt).toBe('Склеп');
   });
 
   it('should correctly adapt QuestDto (detailed view)', () => {

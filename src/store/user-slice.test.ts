@@ -7,7 +7,7 @@ describe('User Slice', () => {
   });
 
   it('should return initial state structure', () => {
-    const state = userReducer(undefined, { type: 'UNKNOWN_ACTION' });
+    const state = userReducer(undefined, { type: 'UNKNOWN_ACTION' } as const);
     expect(state).toHaveProperty('token');
     expect(state).toHaveProperty('email');
     expect(state).toHaveProperty('isAuth');

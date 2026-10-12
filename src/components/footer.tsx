@@ -7,7 +7,7 @@ export function Footer() {
             <li className="socials__item">
               <a
                 className="socials__link"
-                href="#"
+                href="https://www.skype.com/"
                 aria-label="Skype"
                 target="_blank"
                 rel="nofollow noopener noreferrer"
@@ -23,7 +23,7 @@ export function Footer() {
             <li className="socials__item">
               <a
                 className="socials__link"
-                href="#"
+                href="https://vk.com/"
                 aria-label="ВКонтакте"
                 target="_blank"
                 rel="nofollow noopener noreferrer"
